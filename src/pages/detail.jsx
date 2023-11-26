@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import englishData from "../englishData.json";
 import { useParams } from "react-router-dom";
+import axios from "axios";
 
 const Detail = () => {
   const [dailyData, setDailyData] = useState();
@@ -27,6 +28,37 @@ const Detail = () => {
     }
 
     setIsVisible(false);
+  };
+
+  const onClickSound = async () => {
+    const response = await axios.post(
+      `https://texttospeech.googleapis.com/v1/text:synthesize?key=${process.env.REACT_APP_API_KEY}`,
+      {
+        input: { text: dailyData.sentences[currentPage].english },
+        voice: { languageCode: "en-US", ssmlGender: "NEUTRAL" },
+        audioConfig: { audioEncoding: "MP3" },
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const binaryData = atob(response.data.audioContent);
+
+    const byteArray = new Uint8Array(binaryData.length);
+
+    for (let i = 0; i < binaryData.length; i++) {
+      byteArray[i] = binaryData.charCodeAt(i);
+    }
+
+    const blob = new Blob([byteArray.buffer], { type: "audio/mp3" });
+
+    const newAudio = new Audio(URL.createObjectURL(blob));
+
+    document.body.appendChild(newAudio);
+    newAudio.play();
   };
 
   useEffect(() => {
@@ -65,7 +97,10 @@ const Detail = () => {
           >
             Next
           </button>
-          <button className="border-2 border-black px-2 rounded-md">
+          <button
+            className="border-2 border-black px-2 rounded-md"
+            onClick={onClickSound}
+          >
             Sound
           </button>
         </div>
