@@ -7,6 +7,7 @@ const Detail = () => {
   const [dailyData, setDailyData] = useState();
   const [isVisible, setIsVisible] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { day } = useParams();
 
@@ -31,6 +32,8 @@ const Detail = () => {
   };
 
   const onClickSound = async () => {
+    setIsLoading(true);
+
     const response = await axios.post(
       `https://texttospeech.googleapis.com/v1/text:synthesize?key=${process.env.REACT_APP_API_KEY}`,
       {
@@ -59,6 +62,8 @@ const Detail = () => {
 
     document.body.appendChild(newAudio);
     newAudio.play();
+
+    setTimeout(() => setIsLoading(false), 3000);
   };
 
   useEffect(() => {
